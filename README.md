@@ -292,7 +292,7 @@ curl -s http://localhost:3000/api/health | jq .
 
 ## 7. API Documentation and Contracts
 
-The API accepts telecom tower sensor telemetry, verifies physical constraints, and returns a failure probability, binary prediction (within 48 hours), and categorical risk tier. Complete specifications are documented in [docs/input_contract.md](docs/input_contract.md).
+The API accepts telecom tower sensor telemetry, validates physical constraints, and returns a failure probability, binary prediction (within 48 hours), and categorical risk tier. These are model estimates, not guaranteed predictions of real-world failures. Complete specifications are documented in [docs/input_contract.md](docs/input_contract.md).
 
 ### Telemetry Field Schema & Constraints
 
