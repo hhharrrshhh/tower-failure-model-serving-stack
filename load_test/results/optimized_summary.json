@@ -1,0 +1,38 @@
+[
+  {
+    "scenario": "Low_Concurrency",
+    "concurrency": 10,
+    "requests": 1759,
+    "failures": 0,
+    "error_rate_pct": 0.0,
+    "throughput_rps": 93.06,
+    "p50_ms": 52.0,
+    "p95_ms": 180.0,
+    "p99_ms": 320.0,
+    "max_ms": 1414.17
+  },
+  {
+    "scenario": "Medium_Concurrency",
+    "concurrency": 100,
+    "requests": 2699,
+    "failures": 0,
+    "error_rate_pct": 0.0,
+    "throughput_rps": 110.41,
+    "p50_ms": 980.0,
+    "p95_ms": 1300.0,
+    "p99_ms": 1800.0,
+    "max_ms": 3515.39
+  },
+  {
+    "scenario": "Peak_Stress_500",
+    "concurrency": 500,
+    "requests": 8003,
+    "failures": 686,
+    "error_rate_pct": 8.57,
+    "throughput_rps": 272.42,
+    "p50_ms": 800.0,
+    "p95_ms": 2000.0,
+    "p99_ms": 15000.0,
+    "max_ms": 18214.15
+  }
+]

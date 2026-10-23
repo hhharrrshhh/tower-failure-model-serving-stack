@@ -1,0 +1,22 @@
+groups:
+  - name: tower_serving_alerts
+    rules:
+      - alert: HighLatencyP95
+        expr: histogram_quantile(0.95, sum(rate(tower_serving_http_request_duration_seconds_bucket[1m])) by (le)) > 0.08
+        for: 15s
+        labels:
+          severity: warning
+          tier: serving
+        annotations:
+          summary: "Serving latency p95 exceeded 80ms"
+          description: "Tower prediction service 95th percentile latency is {{ $value | humanizeDuration }} (threshold: 80ms). Check CPU saturation and worker concurrency."
+
+      - alert: HighFailurePredictionSpike
+        expr: (sum(rate(tower_serving_predictions_total{prediction_class="1"}[1m])) / sum(rate(tower_serving_predictions_total[1m]))) > 0.45
+        for: 15s
+        labels:
+          severity: critical
+          tier: ml_model
+        annotations:
+          summary: "Abnormal surge in tower failure predictions (>45%)"
+          description: "Over 45% of incoming tower telemetry predictions indicate imminent failure within 48h (baseline is 20.8%). Inspect potential regional grid storm or telemetry sensor drift."
