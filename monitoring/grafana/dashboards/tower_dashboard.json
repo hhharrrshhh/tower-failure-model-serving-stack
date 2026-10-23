@@ -94,7 +94,7 @@
       "description": "Proportion of towers predicted to fail within 48h. Baseline is ~20.8%. Alert fires at >45%.",
       "targets": [
         {
-          "expr": "(sum(rate(tower_serving_predictions_total{prediction_class='1'}[1m])) / sum(rate(tower_serving_predictions_total[1m]))) * 100",
+          "expr": "((sum(rate(tower_serving_predictions_total{prediction_class='1'}[1m])) or vector(0)) / (sum(rate(tower_serving_predictions_total[1m])) > 0)) * 100",
           "legendFormat": "Failure Prediction Share (%)",
           "refId": "A"
         }
