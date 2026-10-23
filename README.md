@@ -172,7 +172,7 @@ This repository uses only the following tools and libraries:
 ├── monitoring/
 │   ├── grafana/
 │   │   ├── dashboards/
-│   │   │   └── tower_dashboard.json          # Dashboard JSON definition (4 monitoring panels)
+│   │   │   └── tower_dashboard.json          # Dashboard JSON definition (5 monitoring panels)
 │   │   └── provisioning/
 │   │       ├── dashboards/dashboards.yml     # Automated dashboard provider definition
 │   │       └── datasources/datasources.yml   # Automated Prometheus datasource provider definition
@@ -209,7 +209,7 @@ This repository uses only the following tools and libraries:
 
 1. **Clone the repository**:
    ```bash
-   git clone <YOUR_GITHUB_REPOSITORY_URL> tower-serving-stack
+   git clone https://github.com/hhharrrshhh/tower-failure-model-serving-stack.git tower-serving-stack
    cd tower-serving-stack
    ```
 
@@ -493,9 +493,9 @@ scrape_configs:
 - `tower_serving_failure_probability`: Histogram distribution of predicted failure probabilities across 10 buckets.
 
 ### Grafana Dashboard Panels
-The dashboard in [monitoring/grafana/dashboards/tower_dashboard.json](monitoring/grafana/dashboards/tower_dashboard.json) is auto-provisioned to folder **MLOps Operations** and contains five panels:
+The dashboard in [monitoring/grafana/dashboards/tower_dashboard.json](monitoring/grafana/dashboards/tower_dashboard.json) is provisioned from the repository JSON and contains five panels:
 1. **Throughput / Request Rate (RPS)**: `sum(rate(tower_serving_http_requests_total[30s])) by (endpoint, status_code)`
-2. **Latency Percentiles (p50, p95, p99)**: `histogram_quantile(0.95, sum(rate(tower_serving_http_request_duration_seconds_bucket{endpoint='/predict'}[1m])) by (le)) * 1000`
+2. **Latency Percentiles (p50, p95, p99)**: Uses `histogram_quantile(0.50, ...)`, `histogram_quantile(0.95, ...)`, and `histogram_quantile(0.99, ...)` over the `/predict` latency histogram, multiplied by 1000 to display milliseconds.
 3. **HTTP Error Rate (%)**: `(sum(rate(tower_serving_http_requests_total{status_code=~'4..|5..'}[1m])) / sum(rate(tower_serving_http_requests_total[1m]))) * 100`
 4. **Share of 'Failure' Predictions (%) vs Baseline**: `((sum(rate(tower_serving_predictions_total{prediction_class='1'}[1m])) or vector(0)) / (sum(rate(tower_serving_predictions_total[1m])) > 0)) * 100` *(Includes vector fallback to display 0% instead of 'No data' during normal traffic).*
 
@@ -654,7 +654,7 @@ For production or cloud deployment (e.g., AWS EC2, DigitalOcean, or an on-premis
    ```
 5. Clone repository and start services:
    ```bash
-   git clone <YOUR_GITHUB_REPOSITORY_URL> /opt/tower-service
+   git clone https://github.com/hhharrrshhh/tower-failure-model-serving-stack.git /opt/tower-service
    cd /opt/tower-service
    docker compose up -d --build
    ```
