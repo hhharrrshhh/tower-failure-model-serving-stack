@@ -117,7 +117,7 @@ flowchart TD
 ### Component Roles
 - **FastAPI Serving Service (`tower-api`)**: Serves prediction requests over HTTP, runs 2 Uvicorn workers, validates inputs via Pydantic, and tracks request counters and latency histograms in-memory.
 - **Prometheus (`tower-prometheus`)**: Scrapes the `/metrics` endpoint every 5 seconds, calculates sliding rate windows, evaluates alert rules, and exposes time-series data.
-- **Grafana (`tower-grafana`)**: Auto-provisions a dashboard with four operational panels without manual UI configuration.
+- **Grafana (`tower-grafana`)**: Loads the repository dashboard definition with five operational panels through the configured Grafana provisioning setup.
 - **Watchdog (`scripts/watchdog.sh`)**: Runs via cron on the Linux host, queries the `/health` endpoint every minute, logs status with ISO-8601 timestamps, automatically restarts degraded containers, and stops after 3 consecutive failures.
 
 ---
@@ -185,7 +185,7 @@ This repository uses only the following tools and libraries:
 ├── scripts/
 │   ├── logrotate.conf                        # Linux logrotate specification for watchdog logs
 │   ├── setup_permissions.sh                  # User/group creation and file permission demonstration
-│   ├── trigger_alerts.py                     # Safe alert test harness (reversibly triggers firing states)
+│   ├── trigger_alerts.py                     # Alert test harness (attempts to trigger configured firing states)
 │   └── watchdog.sh                           # Self-healing health check and container restart script
 ├── src/
 │   ├── app.py                                # FastAPI prediction service, lifecycle, and metrics middleware
