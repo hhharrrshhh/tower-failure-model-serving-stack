@@ -493,7 +493,7 @@ scrape_configs:
 - `tower_serving_failure_probability`: Histogram distribution of predicted failure probabilities across 10 buckets.
 
 ### Grafana Dashboard Panels
-The dashboard in [monitoring/grafana/dashboards/tower_dashboard.json](monitoring/grafana/dashboards/tower_dashboard.json) is auto-provisioned to folder **MLOps Operations** and contains four panels:
+The dashboard in [monitoring/grafana/dashboards/tower_dashboard.json](monitoring/grafana/dashboards/tower_dashboard.json) is auto-provisioned to folder **MLOps Operations** and contains five panels:
 1. **Throughput / Request Rate (RPS)**: `sum(rate(tower_serving_http_requests_total[30s])) by (endpoint, status_code)`
 2. **Latency Percentiles (p50, p95, p99)**: `histogram_quantile(0.95, sum(rate(tower_serving_http_request_duration_seconds_bucket{endpoint='/predict'}[1m])) by (le)) * 1000`
 3. **HTTP Error Rate (%)**: `(sum(rate(tower_serving_http_requests_total{status_code=~'4..|5..'}[1m])) / sum(rate(tower_serving_http_requests_total[1m]))) * 100`
