@@ -90,8 +90,8 @@ flowchart TD
     end
 
     %% Data Flow
-    A1 -->|POST /predict (JSON)| B1
-    A2 -->|POST /predict (Batch JSON)| B1
+    A1 -->|"POST /predict (JSON)"| B1
+    A2 -->|"POST /predict (Batch JSON)"| B1
     A3 -->|HTTP Load Injection| B1
 
     B1 --> B2
@@ -437,9 +437,21 @@ python src/train.py
 Defined in [src/features.py](src/features.py) via `TowerFeatureEngineer`:
 - **Median Imputation**: Handles missing values in `Temperature_C`, `Battery_Voltage`, `Fan_Speed_RPM`, and `Humidity_Percent`.
 - **Domain Interaction Features**:
-  - `temp_to_fan`: $\frac{\text{Temperature\_C}}{\text{Fan\_Speed\_RPM} + 1.0}$ (thermal dissipation efficiency)
-  - `power_to_traffic`: $\frac{\text{Power\_Consumption\_W}}{\text{Traffic\_Load} + 1.0}$ (energy consumed per active subscriber session)
-  - `stress_index`: $\frac{\text{Temperature\_C} \times \text{Power\_Consumption\_W}}{\text{Fan\_Speed\_RPM} + 1.0}$ (compound electrical-thermal cabinet stress)
+  - `temp_to_fan`: thermal dissipation efficiency
+
+    $$
+    \text{temp\_to\_fan} = \frac{\text{Temperature\_C}}{\text{Fan\_Speed\_RPM} + 1.0}
+    $$
+  - `power_to_traffic`: energy consumed per active subscriber session
+
+    $$
+    \text{power\_to\_traffic} = \frac{\text{Power\_Consumption\_W}}{\text{Traffic\_Load} + 1.0}
+    $$
+  - `stress_index`: compound electrical-thermal cabinet stress
+
+    $$
+    \text{stress\_index} = \frac{\text{Temperature\_C} \times \text{Power\_Consumption\_W}}{\text{Fan\_Speed\_RPM} + 1.0}
+    $$
 
 ### Evaluation Metrics (Recorded in `artifacts/model_metadata.json`)
 
