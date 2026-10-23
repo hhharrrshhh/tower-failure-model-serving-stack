@@ -437,21 +437,9 @@ python src/train.py
 Defined in [src/features.py](src/features.py) via `TowerFeatureEngineer`:
 - **Median Imputation**: Handles missing values in `Temperature_C`, `Battery_Voltage`, `Fan_Speed_RPM`, and `Humidity_Percent`.
 - **Domain Interaction Features**:
-  - `temp_to_fan`: thermal dissipation efficiency
-
-    $$
-    \text{temp\_to\_fan} = \frac{\text{Temperature\_C}}{\text{Fan\_Speed\_RPM} + 1.0}
-    $$
-  - `power_to_traffic`: energy consumed per active subscriber session
-
-    $$
-    \text{power\_to\_traffic} = \frac{\text{Power\_Consumption\_W}}{\text{Traffic\_Load} + 1.0}
-    $$
-  - `stress_index`: compound electrical-thermal cabinet stress
-
-    $$
-    \text{stress\_index} = \frac{\text{Temperature\_C} \times \text{Power\_Consumption\_W}}{\text{Fan\_Speed\_RPM} + 1.0}
-    $$
+  - `temp_to_fan`: thermal dissipation efficiency. Formula: `Temperature_C / (Fan_Speed_RPM + 1.0)`
+  - `power_to_traffic`: energy consumed per active subscriber session. Formula: `Power_Consumption_W / (Traffic_Load + 1.0)`
+  - `stress_index`: compound electrical-thermal cabinet stress. Formula: `(Temperature_C * Power_Consumption_W) / (Fan_Speed_RPM + 1.0)`
 
 ### Evaluation Metrics (Recorded in `artifacts/model_metadata.json`)
 
