@@ -93,23 +93,29 @@ fi
 log_msg "WARN" "Initiating automated recovery restart (Attempt ${CONSECUTIVE_FAILURES}/${MAX_CONSECUTIVE_RESTARTS})..."
 RESTART_START_TIME=$(date +%s)
 
-# Trigger restart: Docker container if running in docker, or fallback to uvicorn process
-if command -v docker >/dev/null 2>&1 && docker ps -q -f name=tower-api | grep -q .; then
-    docker restart tower-api >/dev/null 2>&1 || true
-    log_msg "INFO" "Issued 'docker restart tower-api'"
+# Trigger restart safely: this deployment uses Docker.
+if command -v docker >/dev/null 2>&1; then
+    if docker inspect tower-api >/dev/null 2>&1; then
+        if ! docker restart tower-api >/dev/null; then
+            log_msg "ERROR" "Docker restart failed for tower-api."
+            exit 1
+        fi
+        log_msg "INFO" "Restarted Docker container tower-api"
+    else
+        log_msg "ERROR" "Docker exists but tower-api container is missing. Refusing local fallback."
+        exit 1
+    fi
 else
-    # Fallback process restart for local testing
-    pkill -f "uvicorn.*app:app" || true
-    nohup python -m uvicorn app:app --host 0.0.0.0 --port 8000 --app-dir src >/tmp/tower_serving_recovery.log 2>&1 &
-    log_msg "INFO" "Restarted local uvicorn background process"
+    log_msg "ERROR" "Docker unavailable. Refusing unsafe local Uvicorn fallback."
+    exit 1
 fi
 
 # Poll until service recovers or 30s timeout
 RECOVERED=false
 for i in {1..30}; do
     sleep 1
-    CHECK_CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 2 "${SERVICE_URL}" 2>/dev/null || echo "000")
-    if [[ "${CHECK_CODE}" == "200" ]]; then
+    CHECK_BODY=$(curl -fsS --max-time 2 "${SERVICE_URL}" 2>/dev/null || true)
+    if [[ "${CHECK_BODY}" == *"healthy"* && "${CHECK_BODY}" == *"true"* && "${CHECK_BODY}" == *"model_loaded"* ]]; then
         RECOVERY_TIME=$(( $(date +%s) - RESTART_START_TIME ))
         log_msg "RECOVERY" "SUCCESS! Service recovered and responding healthy at ${SERVICE_URL} in ${RECOVERY_TIME}s."
         RECOVERED=true
