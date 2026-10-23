@@ -50,7 +50,7 @@ Cellular base transceiver stations (towers) are deployed across geographically d
 - **Identical Training & Serving Preprocessing**: Reusable feature transformer module shared directly between `src/train.py` and `src/app.py` to prevent training-serving skew.
 - **Fast Vectorized Inference**: Array preallocation bypassing per-request DataFrame creation overhead.
 - **Fully Automated Provisioning**: Dashboards, Prometheus data sources, and alert rules mount declaratively on container startup with zero manual UI setup.
-- **Self-Healing Watchdog**: Detects API degradation and restarts the container within 30 seconds while capping consecutive restarts to prevent thrashing.
+- **Watchdog**: Checks API health, attempts a container or local-process restart after a failed check, polls for recovery for up to 30 seconds, and limits repeated restart attempts. This is a configured recovery window, not a guarantee that every failure recovers within 30 seconds.
 
 ---
 
@@ -595,11 +595,11 @@ To fulfill Linux system administration requirements, this repository provides se
 *Requirements: Linux, Ubuntu, or WSL2.*
 
 - **Health Probing**: Queries `http://localhost:8000/health` with a 4-second timeout.
-- **Automated Container Restart**: If the endpoint fails or returns a degraded status, it issues `docker restart tower-api` and verifies recovery for up to 30 seconds.
+- **Restart and recovery check**: If the endpoint fails or returns a degraded status, it attempts `docker restart tower-api` when that container is running (otherwise it tries a local Uvicorn fallback) and polls for HTTP 200 for up to 30 seconds. Recovery is not guaranteed; check the watchdog and service logs.
 - **Anti-Restart Loop Guard**: Tracks consecutive failures in `/tmp/tower_watchdog_state.json`. If 3 consecutive restart attempts fail, automated restarts are halted to prevent thrashing, and an alert is logged for operator intervention.
 - **Dual Log Rotation Support**:
   - **Internal Size-Based Rotation**: Handled directly inside `scripts/watchdog.sh` without requiring external daemons. When `/var/log/tower-watchdog/watchdog.log` exceeds 500 KB, it cycles up to 5 numbered generations (`watchdog.log.1` to `.5`).
-  - **External System Daemon Rotation**: Configured via [scripts/logrotate.conf](scripts/logrotate.conf) for production Linux hosts running `logrotate.d`, providing daily rotation, 7-generation retention, gzip compression (`delaycompress`), and secure permissions (`640 root:towerops`).
+  - **External system logrotate policy**: [scripts/logrotate.conf](scripts/logrotate.conf) provides a separate policy for installation on a Linux host. Its behavior depends on installing and running the system `logrotate` service with suitable permissions.
 
 #### Verification & Execution
 ```bash
