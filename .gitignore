@@ -39,3 +39,15 @@ htmlcov/
 # Operating System Files
 .DS_Store
 Thumbs.db
+
+# Frontend — never commit secrets or build output
+frontend/node_modules/
+frontend/dist/
+frontend/.env.local
+frontend/.env.*.local
+frontend/.vite/
+
+# Local Windows scripts
+Start_Tower_Project.bat
+Stop_Tower_Project.bat
+test_detect.bat

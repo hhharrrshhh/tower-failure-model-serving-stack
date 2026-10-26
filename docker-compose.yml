@@ -11,6 +11,7 @@ services:
     environment:
       - WORKERS=2
       - LOG_LEVEL=info
+      - CORS_ORIGINS=http://localhost:5173,http://localhost:4173
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 10s

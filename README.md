@@ -785,3 +785,156 @@ No license file is currently provided in this repository. All rights are reserve
   - **Harsh Gharat** (B032)
   - **Manav Thakkar** (B055)
 - **Faculty Guide**: Dr. Santosh Kumar
+
+---
+
+## 17. Frontend — Local Setup, Launchers, and Deployment
+
+A React + Vite + TypeScript + Tailwind CSS dashboard lives in `frontend/`. It connects directly to the FastAPI backend.
+
+### Quick Start — Full Stack (Recommended)
+
+Double-click **`Start_Tower_Project.bat`** in the project root. It will:
+
+1. Verify WSL, npm, and required files are present before doing anything.
+2. Start Docker Compose (API + Prometheus + Grafana) via WSL (`kali-linux`).
+3. Install frontend `node_modules` on first run only.
+4. Detect whether port 5173 is already in use; skip launch if so.
+5. Open a separate terminal running `npm run dev`.
+6. Open all URLs in your default browser.
+
+```
+Start_Tower_Project.bat    ← start everything
+Stop_Tower_Project.bat     ← stop everything safely
+```
+
+> **Prerequisites:** Docker Desktop must be running with WSL integration enabled, and WSL distro must be named `kali-linux`. Node.js 20+ must be on the Windows PATH.
+
+### Run Services Independently
+
+**Backend only (Docker Compose):**
+```bash
+# From WSL / Kali terminal
+cd '/mnt/d/Study/Semester III/MLOps/MLOps Projecttt'
+docker compose up -d --build
+```
+
+**Backend only (local Python, no Docker):**
+```bash
+# From the project root (Windows or WSL)
+pip install -r requirements.txt
+uvicorn app:app --host 0.0.0.0 --port 8000 --app-dir src
+```
+
+**Frontend only:**
+```bash
+cd frontend
+cp .env.example .env.local   # only needed once; defaults to http://localhost:8000
+npm install                   # only needed once
+npm run dev                   # → http://localhost:5173
+```
+
+**Validate production build:**
+```bash
+cd frontend
+npm run build    # TypeScript check + Vite bundle → dist/
+npm run preview  # Serve dist/ at http://localhost:4173
+```
+
+### Stop All Services
+
+```bash
+# Run the stop script
+Stop_Tower_Project.bat
+
+# Or manually:
+# Stop Docker (from WSL/Kali):
+docker compose down
+
+# Stop the Vite dev server:
+# Close the "Tower Frontend (Vite)" terminal window, or kill port 5173 process.
+```
+
+### Service URLs (Local)
+
+| Service | URL | Notes |
+|---|---|---|
+| **Frontend** | http://localhost:5173 | Vite dev server (`npm run dev`) |
+| **Frontend (preview)** | http://localhost:4173 | After `npm run build && npm run preview` |
+| **FastAPI** | http://localhost:8000 | Docker or local uvicorn |
+| **Swagger UI** | http://localhost:8000/docs | Interactive API docs |
+| **Health check** | http://localhost:8000/health | JSON status |
+| **Prometheus** | http://localhost:9090 | Metrics browser |
+| **Grafana** | http://localhost:3000 | Dashboards (admin / admin) |
+
+---
+
+### Deploy Backend to Render
+
+Render runs the backend directly from the repo root (not Docker).
+
+**Settings in the Render dashboard (Web Service):**
+
+| Field | Value |
+|---|---|
+| **Runtime** | Python 3 |
+| **Root Directory** | *(leave blank — repo root)* |
+| **Build Command** | `pip install -r requirements.txt` |
+| **Start Command** | `uvicorn app:app --host 0.0.0.0 --port $PORT --app-dir src` |
+
+**Environment Variables (Render → Environment tab):**
+
+| Variable | Value |
+|---|---|
+| `CORS_ORIGINS` | `https://your-app.vercel.app` |
+| `PYTHONPATH` | `src` |
+
+> The `artifacts/model_v1.joblib` file must be committed to the repo (it is ~550 KB — acceptable). Render clones the repo at deploy time and will find it at `artifacts/model_v1.joblib` relative to the repo root.
+
+Multiple CORS origins (e.g. production + preview branches) are comma-separated:
+```
+CORS_ORIGINS=https://your-app.vercel.app,https://your-app-git-main.vercel.app
+```
+
+---
+
+### Deploy Frontend to Vercel
+
+**Settings in the Vercel dashboard (import from GitHub):**
+
+| Field | Value |
+|---|---|
+| **Root Directory** | `frontend` |
+| **Framework Preset** | Vite (auto-detected) |
+| **Build Command** | `npm run build` |
+| **Output Directory** | `dist` |
+| **Install Command** | `npm install` |
+| **Node.js Version** | 20.x |
+
+**Environment Variable (Vercel → Project → Settings → Environment Variables):**
+
+| Name | Value |
+|---|---|
+| `VITE_API_BASE_URL` | `https://your-backend.onrender.com` |
+
+> This value is baked into the JS bundle at build time. After changing it, trigger a Vercel redeploy.
+
+---
+
+### Environment Files
+
+| File | Purpose | Committed |
+|---|---|---|
+| `frontend/.env.example` | Template — safe defaults, copy to `.env.local` | ✅ |
+| `frontend/.env.local` | Local overrides — never committed | ❌ gitignored |
+| Vercel env vars | Production build-time values | N/A |
+
+---
+
+### Known Limitations
+
+- **Prometheus and Grafana** are local-only services. The UI footer links to `localhost:9090` and `localhost:3000` regardless of deployment environment. These are not exposed in production.
+- **Session history** resets on page reload. No server-side persistence is implemented.
+- **WSL distro name is hardcoded** to `kali-linux` in the `.bat` scripts. If your distro has a different name, edit the `wsl -d kali-linux` calls in both scripts.
+- **Backend tests** emit deprecation warnings from `starlette.testclient` and `joblib` under Python 3.14. Both tests pass. These are upstream library issues unrelated to this project's code.
+- **Render free tier** spins down after inactivity. The first request after sleep may take 30–60 seconds while the service wakes up. The frontend will show "API Offline" until the backend responds.

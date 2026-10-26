@@ -14,6 +14,7 @@ import numpy as np
 import joblib
 import pandas as pd
 from fastapi import FastAPI, HTTPException, Request, Response, status
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from prometheus_client import Counter, Histogram, generate_latest, CONTENT_TYPE_LATEST
@@ -83,6 +84,19 @@ app = FastAPI(
     description="MLOps prediction service for mobile tower 48-hour failure prediction.",
     version="1.0.0",
     lifespan=lifespan,
+)
+
+# CORS — configure allowed origins via CORS_ORIGINS env var (comma-separated).
+# Example: CORS_ORIGINS=https://your-app.vercel.app
+# Defaults to localhost:5173 for local Vite dev server.
+_raw_origins = os.environ.get("CORS_ORIGINS", "http://localhost:5173")
+_allowed_origins = [o.strip() for o in _raw_origins.split(",") if o.strip()]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=_allowed_origins,
+    allow_credentials=False,
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Content-Type"],
 )
 
 @app.middleware("http")
